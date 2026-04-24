@@ -25,9 +25,18 @@ jobs:
       - name: Build PDF
         run: make
 
-      - name: Upload PDF
+      - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
           name: main.pdf
           path: main.pdf
           if-no-files-found: error
+
+      - name: Publish to GitHub Releases
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest PDF
+          files: main.pdf
+          make_latest: true
