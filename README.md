@@ -13,3 +13,9 @@ This repository contains the LaTeX source for the GlitchGAN paper. GlitchGAN is 
 ## Reading the paper
 
 The latest version of the paper is available as a [PDF download](https://nightly.link/tomdooney95/glitchgan_glitch_synthesis_2026/workflows/build.yml/main/main.pdf.zip).
+
+
+## Related code
+
+The GlitchGAN training code (PyTorch implementation) is available at:
+[https://github.com/tomdooney95/cDVGAN_for_DeepExtractor](https://github.com/tomdooney95/cDVGAN_for_DeepExtractor)
