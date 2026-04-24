@@ -15,6 +15,20 @@ This repository contains the LaTeX source for the GlitchGAN paper. GlitchGAN is 
 The latest version of the paper is available as a [PDF download](https://github.com/tomdooney95/glitchgan_glitch_synthesis_2026/releases/latest/download/main.pdf).
 
 
+## Contributing
+
+Please make changes on your own branch rather than committing directly to `main`:
+
+```bash
+git checkout -b your-name/my-changes
+# make your edits
+git add .
+git commit -m "Brief description of changes"
+git push origin your-name/my-changes
+```
+
+Then open a pull request on GitHub so changes can be reviewed before merging.
+
 ## Related code
 
 The GlitchGAN training code (PyTorch implementation) is available at:
