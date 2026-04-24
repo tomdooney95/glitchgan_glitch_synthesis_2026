@@ -12,7 +12,7 @@ This repository contains the LaTeX source for the GlitchGAN paper. GlitchGAN is 
 
 ## Reading the paper
 
-The latest version of the paper is available as a [PDF download](https://nightly.link/tomdooney95/glitchgan_glitch_synthesis_2026/workflows/build.yml/main/main.pdf.zip).
+The latest version of the paper is available as a [PDF download](https://github.com/tomdooney95/glitchgan_glitch_synthesis_2026/releases/latest/download/main.pdf).
 
 
 ## Related code
