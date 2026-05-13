@@ -12,3 +12,13 @@
 
 # Keep the compiled PDF
 !main.pdf
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Backup / copy files
+*\ copy.*
+*_old.*
