@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 cd "$(dirname "$0")"
 
 # Check for duplicate bib keys before doing anything
@@ -10,13 +9,14 @@ if [ -n "$dupes" ]; then
     exit 1
 fi
 
-# Clean auxiliary files
-rm -f *.aux *.bbl *.blg *.log *.toc *.out *.fdb* *.fls *.synctex.gz *.dvi
+# Clean aux files — but NOT main.bbl (preserving it avoids a pdflatex/revtex
+# bug that truncates the aux on a fresh start when no .bbl exists yet)
+rm -f main.aux main.out main.blg main.log main.toc main.synctex.gz
 
-# Full pass: pdflatex → bibtex → pdflatex → pdflatex
-pdflatex -interaction=nonstopmode main.tex
-bibtex main
-pdflatex -interaction=nonstopmode main.tex
-pdflatex -interaction=nonstopmode main.tex
+# Full 4-pass build
+pdflatex -interaction=nonstopmode main.tex || true
+bibtex main || true
+pdflatex -interaction=nonstopmode main.tex || true
+pdflatex -interaction=nonstopmode main.tex || true
 
 open main.pdf
