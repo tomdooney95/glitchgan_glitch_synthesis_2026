@@ -70,40 +70,49 @@ We further highlight a critical limitation of magnitude-only spectrograms: class
 
 \section{Introduction}
 
-The direct detection of gravitational waves (GWs) by the LIGO \cite{LIGO_paper} and Virgo \cite{VIRGOpaper} interferometers has opened a new observational window on the universe, enabling measurements of compact binary coalescences and other cataclysmic astrophysical events~\cite{GWTC_3_catalog}.
-The extreme sensitivity required for these detections, however, renders the instruments equally susceptible to instrumental and environmental noise sources~\cite{LIGO_O3_detector_characterization}.
-Among these, short-duration transient noise artefacts known as \textit{glitches}~\cite{LIGO_second_third_detchar, Virgo_detchar_O3, Kagra_detchara} represent a persistent challenge for data analysis pipelines.
-Glitches exhibit diverse morphologies---ranging from impulsive millisecond-duration events to extended, dispersive features spanning several seconds---and can mimic or obscure astrophysical signals~\cite{abbott2018effects, blackburn2008lsc, abbott2016characterization}.
-When a glitch overlaps with a genuine GW signal it can significantly bias parameter estimation~\cite{pankow2018mitigation, PE_glitch_1, PE_glitch_2}, and approximately 25 of the $\sim\!90$ confident detections up to the end of O3 required some form of glitch mitigation~\cite{GWTC_3_catalog, pankow2018mitigation, BNS_1, BNS_2, BNS_BBH_1, BNS_BBH_2}.
-With the anticipated sensitivity improvements of next-generation detectors such as Einstein Telescope \cite{ET_paper} and Cosmic Explorer \cite{Cosmic_expl}, the rate and impact of glitches are expected to increase substantially~\cite{Detchar_nextgen_glitch}.
+The detection of gravitational waves (GWs) by the LIGO \cite{LIGO_paper} and Virgo \cite{VIRGOpaper} detectors has opened a new observational window on the universe, enabling measurements of compact binary coalescences and other cataclysmic astrophysical events~\cite{GWTC_3_catalog}.
+The extreme sensitivity required for these detections, however, renders the instruments susceptible to instrumental and environmental noise sources~\cite{LIGO_O3_detector_characterization}.
+Among these, short-duration transient noise artefacts known as \textit{glitches}~\cite{LIGO_second_third_detchar, Virgo_detchar_O3, Kagra_detchara} represent a persistent challenge for data analysis pipelines and extensive work is required to mitigate their impact, ensuring the quality of gravitational-wave data~\cite{davis2026rapiddataqualityinvestigations}.
+Glitches are unmodelled noise events that exhibit diverse morphologies---ranging from impulsive millisecond-duration events to extended, dispersive features spanning several seconds---and can mimic or obscure astrophysical signals~\cite{abbott2018effects, blackburn2008lsc, abbott2016characterization}.
+When a glitch overlaps with a GW signal it can significantly bias parameter estimation~\cite{pankow2018mitigation, PE_glitch_1, PE_glitch_2}, and approximately 25 of the $\sim\!90$ confident detections up to the end of O3 required some form of glitch mitigation~\cite{GWTC_3_catalog, pankow2018mitigation, BNS_1, BNS_2, BNS_BBH_2}.
+The contamination of astrophysical signals by glitches will be exacerbated in next-generation. Detectors such as Einstein Telescope \cite{ET_paper} and Cosmic Explorer \cite{Cosmic_expl} are expected to detect on the order of $10^4-10^5$ binary black hole and neutron star mergers per year~\cite{Iacovelli_2022, Kalogera_BNS}, thus giving rise to more frequent glitch-signal overlaps.
+% The ET alone is expected to detect on the order of $8 \times 10^4$ BBH mergers and $7 \times 10^4$ BNS mergers per year~\cite{Iacovelli_2022, Kalogera_BNS}, or more than 400 detections per day. 
 
-The ability to synthesize accurate and realistic glitch populations is therefore of growing importance.
-Such capability enhances the realism of detector simulations and supports software injection campaigns~\cite{Abadie_2010_injection_1, Abadie_2010_injection_2, Biwer_2017_inject, Virgo_detchar_O3}, enabling more rigorous validation of GW detection pipelines and parameter estimation algorithms.
+% even if glitch rates remain the same, the improved sensitivity will increase the rate of astrophysical detections and therefore the likelihood of glitch-signal overlap.
+
+% while also increasing the rate of glitches above the detection threshold, amplifying their overall impact on astrophysical searches~\cite{Detchar_nextgen_glitch}.
+% Even if glitch rates remain the same, the heightened sensitivity of next-generation detectors such as Einstein Telescope \cite{ET_paper} and Cosmic Explorer \cite{Cosmic_expl} will lead to a higher rate of glitches 
+% will lead to a higher rate of glitches above the detection threshold, increasing the likelihood of glitch-signal overlap and the overall impact on astrophysical searches~\cite{Detchar_nextgen_glitch}.
+% With the anticipated sensitivity improvements of next-generation detectors such as Einstein Telescope \cite{ET_paper} and Cosmic Explorer \cite{Cosmic_expl}, the rate and impact of glitches are expected to increase substantially~\cite{Detchar_nextgen_glitch}.
+
+The ability to synthesize realistic glitch populations is therefore of growing importance.
+Such capability enhances the realism of detector simulations and supports software injection campaigns~\cite{Abadie_2010_injection_1, Abadie_2010_injection_2, Virgo_detchar_O3}, enabling more rigorous validation of GW detection pipelines and parameter estimation algorithms.
 Realistic synthetic glitches are also essential for the construction of mock data challenges (MDCs) and for data augmentation in machine learning-based glitch classification systems.
-A possible approach is to model glitches mathematically, given \textit{a priori} knowledge of their production mechanism \cite{Tolley:2023umc}. 
+A possible approach is to model glitches mathematically or using machine learning, given \textit{a priori} knowledge of their production mechanism \cite{Tolley:2023umc, Chatterjee_2025}. 
 Other works have developed models that mimic their principal characteristics using a few parameters \cite{Bondarescu:2023jcx}. 
-However, such approaches either require prior knowledge of the glitch's physical origin, which isn't always available, or are limited to a restricted parametric form, making them difficult to scale across the full diversity of observed morphologies.
+However, such approaches either require prior knowledge of the glitch's origin, which isn't always available, or are limited to a restricted parametric form, making them difficult to scale across the full diversity of glitch morphologies.
 
 % Recently, generative models have been applied broadly within GW data analysis to address multiple challenges in GW data synthesis.
 % Conditional autoencoders have been used to generate accurate waveform models for non-spinning binary black hole mergers at a fraction of the computational cost of traditional methods~\cite{Liao:2021vec}, while Generative Adversarial Networks (GANs)~\cite{Goodfellow:2014upx} have been shown to reproduce distributions of core-collapse supernova GW signals~\cite{PhysRevD.110.104055}.
 
-Recently, generative models have been applied broadly within GW data analysis to address multiple challenges in data synthesis~\cite{Liao:2021vec, PhysRevD.110.104055}.
+Recently, generative models have been applied broadly within GW data analysis to address multiple challenges~\cite{Liao:2021vec, PhysRevD.110.104055}.
 For glitch synthesis, Generative Adversarial Networks (GANs)~\cite{Goodfellow:2014upx} have been used to augment spectrogram-based datasets for downstream classification tasks~\cite{GAN_spec_best, Jade_Powell_paper}.
 The \textit{gengli} glitch generator~\cite{GENGLI, GENGLI_2} demonstrated that a GAN trained on Blip glitches extracted from detector data using BayesWave~\cite{BayesWave}, the state-of-the-art method for reconstructing glitches from detector data, can successfully learn their underlying time-domain distribution, providing a useful framework for simulations and MDCs.
 McGANn~\cite{McGinn_2021} implemented a conditional GAN capable of synthesizing five distinct waveform classes analogous to GW bursts in one model, with class interpolation enabling the generation of hybrid morphologies that blend features from the learned classes.
-Powell et al.~\cite{Jade_Powell_paper} implemented generative modelling on a broader glitch class space by training separate GANs on magnitude $Q$-scan representations of each Gravity Spy class.
-However, extending this holistic approach to a single model operating directly in the time domain remains unexplored, despite its advantages in preserving phase information and enabling direct use of time-series data in MDCs and detection pipelines.
+Powell et al.~\cite{Jade_Powell_paper} implemented generative modelling on a broader glitch class space by training separate GANs on magnitude $Q$-scan representations of each glitch class.
+However, extending this approach to a single model operating directly in the time domain remains unexplored, despite its advantages in preserving phase information and enabling direct use of time-series data in simultions and MDCs.
 
 The principal obstacle to realistic time-domain glitch synthesis has been the availability of high-quality training data.
 BayesWave~\cite{BayesWave} is computationally expensive, and converges unreliably for certain glitch morphologies, making it impractical to construct the large-scale, diverse datasets that cover the broad glitch space.
-The recent development of DeepExtractor~\cite{DeepExtractor_paper}---a deep learning U-Net framework for time-domain glitch reconstruction---offers fast, high-fidelity reconstructions that preserve both amplitude and phase information without imposing waveform smoothness assumptions, achieving a $10{,}000\times$ speed-up over BayesWave in realistic simulations.
+The recent development of DeepExtractor~\cite{DeepExtractor_paper}---a deep learning framework for time-domain glitch reconstruction---offers fast, high-fidelity reconstructions that preserve both amplitude and phase information without imposing waveform smoothness assumptions, achieving a $10{,}000\times$ speed-up over BayesWave in realistic simulations.
 
 In this paper, we introduce GlitchGAN, a class-conditional model trained on a dataset of DeepExtractor reconstructions of seven common glitch classes observed during LIGO's O3 run: Blip, Fast Scattering, Koi Fish, Low-Frequency Burst, Scattered Light, Tomte, and Whistle.
 Examples of the glitches used for training and the corresponding GlitchGAN outputs are shown in Figure~\ref{fig:real_vs_generated_waveforms}.
 GlitchGAN inherits the cDVGAN architecture~\cite{cdvgan, dooney2022dvgan}, which features an auxiliary discriminator applied to the time derivative of signals, providing additional regularisation that improves training stability and sample fidelity compared to standard GAN counterparts.
 
-We validate the quality of the DeepExtractor training data using the Gravity Spy classifier~\cite{Zevin_2017, GspyO4} and unsupervised UMAP embeddings~\cite{McInnes_2018}, establishing a baseline against which synthetic glitches can be assessed.
-Applying the same evaluation to GlitchGAN's outputs, we show that the model captures much of the morphological diversity across all seven classes, with substantial overlap between real and generated distributions in the UMAP latent space and with the majority of synthetic glitches correctly identified by Gravity Spy.
+We validate the quality of the DeepExtractor training data using the Gravity Spy classifier~\cite{Zevin_2017, Glanzer_2023, GspyO4} and unsupervised t-SNE \cite{TSNE} and UMAP embeddings~\cite{McInnes_2018}, which have been used in multiple studies to characterize the morphological distribution of glitches in LIGO data~\cite{ferreira2025analysisligoglitchesusing, Ferreira_2025, deshmukh2026soundnoiseleveraginginductive}.
+The evaluation establishes a realistic baseline against which synthetic glitches can be assessed.
+Applying the same evaluation to GlitchGAN's outputs, we show that the model captures much of the morphological diversity across all seven classes, with substantial overlap between real and generated distributions in the t-SNE and UMAP latent spaces and with the majority of synthetic glitches correctly identified by Gravity Spy.
 We also demonstrate that GlitchGAN can interpolate between classes, producing novel hybrid morphologies that mix features from the learned classes.
 We further highlight a fundamental limitation of magnitude-only time-frequency representations as validation tools: when applied to physically unrealistic glitches from a diffusion-based comparison model~\cite{diffusionOriginal}, Gravity Spy assigns correct class labels with high confidence despite clear inconsistency in the time domain, because the $Q$-transform discards phase information entirely.
 This underscores the necessity of complementary, phase-preserving validation methods.
@@ -134,10 +143,10 @@ This underscores the necessity of complementary, phase-preserving validation met
 % This underscores the necessity of complementary, phase-preserving validation methods such as UMAP applied directly to time-domain waveforms.
 
 The remainder of the paper is organized as follows:
-Section~\ref{sec:data} describes the curation and preparation of our training dataset.
+Section~\ref{sec:data} describes the preparation of our training dataset.
 Section~\ref{sec:methods} details the GlitchGAN architecture and training procedure.
-Section~\ref{sec:results} presents validation results across multiple metrics.
-Finally, Section~\ref{sec:discussion} discusses the implications of our findings and opportunities for future work.
+Section~\ref{sec:results} presents results across multiple metrics.
+Finally, Section~\ref{sec:discussion} discusses our findings and opportunities for future work.
 
 \begin{figure*}[t]
 \centering
@@ -226,9 +235,12 @@ Each column shows one representative sample per class.}
 % Our work is the first to demonstrate that a single class-conditional model can effectively learn to generate multiple complex glitch classes in the time domain from DeepExtractor reconstructions, leveraging the full morphological diversity available in the training data.
 
 % \FloatBarrier
+
+\vspace{-1mm}
 \section{Data}
 \label{sec:data}
 
+\vspace{-1mm}
 
 \subsection{Data curation}
 
@@ -255,8 +267,9 @@ Observing runs: O3a and O3b
 
 We include seven glitch classes in the training of GitchGAN, namely; Blip, Fast Scattering, Koi Fish, Low-Frequency Burst, Scattered Light, Tomte, and Whistle.
 
-\textit{Blip} glitches have a characteristic morphology of a symmetric teardrop shape in time-frequency in the range $[30, 300]\,$Hz with short-durations, $\sim 0.04\,$s. They appear in both Hanford and Livingston, as well as Virgo and GEO $600$ \cite{Cabero:2019orq}. 
-Due to their abundance and form, these glitches hinder both the unmodeled burst and modelled CBC searches, with particular emphasis on compact binaries with large total mass, highly asymmetric component masses, and spins anti-aligned with the orbital angular momentum  \cite{abbott2016characterization}.
+\textit{Blip} glitches have a characteristic morphology of a symmetric teardrop shape in time-frequency in the range $[30, 250]\,$Hz with short-durations, $\sim 0.04\,$s \cite{abbott2016characterization}. 
+They appear in both Hanford and Livingston, as well as Virgo and GEO $600$ \cite{Cabero:2019orq}. 
+Due to their abundance and form, these glitches hinder both the unmodeled burst and modelled CBC searches, with particular emphasis on compact binaries with large total mass, highly asymmetric component masses, and spins anti-aligned with the orbital angular momentum~\cite{abbott2018effects}.
 % Moreover, since there is no clear correlation to the auxiliary channels, they cannot be removed from astrophysical searches yet.
 
 \textit{Fast Scattering} glitches appear as short-duration arches ($\sim 0.2 - 0.3\,$s) in the frequency range $[20, 60] \,$Hz. These glitches are strongly correlated with ground motion in range $[0.1 -0.3] \,$Hz and $[1-6] \,$Hz, which in turn is associated with thunderstorms and human activity near the detector. Note that this class was added during O3, and it is more abundant in Livingston than Hanford, due to differences in ground motion and detector sensitivity \cite{Soni:2021cjy}.
@@ -398,10 +411,35 @@ For DeepExtractor, this establishes a quantitative baseline confirming the train
 
 % This experiment evaluates glitches by classifying them with Gravity Spy, to investigate whether the reconstructions and generated glitches preserve the representative morphology of their respective glitch classes.
 We reconstruct with DeepExtractor 100 randomly selected glitches from the Gravity Spy dataset according to the criteria in Section \ref{sec:data}, drawing 25 samples per detector (H1, L1) per observing run (O3a, O3b).
-Since Gravity Spy classifies glitches surrounded by detector background noise i.e. $g(t) + n(t)$, each DeepExtractor reconstruction $\hat{g(t)}$ is injected into a segment of `quiet' Hanford detector noise from O3 prior to reclassification (representing $n(t)$). 
+Since Gravity Spy classifies glitches surrounded by detector background noise i.e. $g(t) + n(t)$, each DeepExtractor reconstruction $\hat{g(t)}$ is injected into a segment of `quiet' Hanford detector noise from O3 between 1262540000 and 1262540040 GPS time prior to reclassification (representing $n(t)$), using the \texttt{fetch\_open\_data} method from the package gwpy~\cite{gwpy}.
+This stretch of data was visually inspected using $Q$-scans to confirm the absence of glitches or other significant noise features.
+
 
 We follow a similar approach to evaluate the GlitchGAN-generated synthetic glitches, injecting them into the same noise segments before classification. 
-The only difference is that we have to explicitly rescale the generated glitches to a fixed SNR of 50 to ensure they are sufficiently loud for classification, since the generator is trained on normalized waveforms and does not learn an explicit SNR distribution. 
+% The only difference is that we have to explicitly rescale the generated glitches to a fixed SNR of 50 to ensure they are sufficiently loud for classification, since the generator is trained on normalized waveforms and does not learn an explicit SNR distribution. 
+The only difference is that we have to explicitly rescale the generated glitches to a fixed SNR to ensure they are sufficiently loud for classification, since the generator is trained on normalized waveforms and does not learn an explicit SNR distribution. 
+We fix the SNR of each glitch class according to the mean SNR of the respective class considering the selection criteria described in Section \ref{sec:data}.
+The mean SNR values used for each class are shown in Table~\ref{tab:injection_snr}.
+
+\begin{table}[h]
+\centering
+\caption{Mean SNR per glitch class used for software injections in the GlitchGAN evaluation.}
+\label{tab:injection_snr}
+\begin{tabular}{l r}
+\toprule
+Glitch Class & Mean SNR \\
+\midrule
+Blip              & 29.8  \\
+Fast Scattering   & 36.4  \\
+Koi Fish          & 187.2 \\
+Low Frequency Burst & 40.3 \\
+Scattered Light   & 31.5  \\
+Tomte             & 25.4  \\
+Whistle           & 27.1  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 
 \subsubsection{Dimensionality Reduction}
 To visualise and compare the high-dimensional feature space of real and synthetic glitches, we use two complementary nonlinear dimensionality reduction methods: \textit{t-distributed Stochastic Neighbor Embedding} (t-SNE)~\cite{TSNE} and \textit{Uniform Manifold Approximation and Projection} (UMAP)~\cite{Umap}. While \textit{Principal Component Analysis} (PCA) captures global variance through linear projections, it cannot resolve the nonlinear structure present in morphologically diverse glitch populations; t-SNE and UMAP are instead designed to preserve local cluster structure in the embedding. t-SNE embeds data by minimising the Kullback--Leibler divergence between probability distributions encoding pairwise similarities in the original and reduced spaces; it excels at revealing local cluster structure but can distort global geometry. UMAP constructs a nearest-neighbour graph in the high-dimensional space and optimises a low-dimensional counterpart to preserve both local and global topological structure, scaling efficiently to the dataset sizes used here.
@@ -558,13 +596,14 @@ The good clustering structure validates that the 31,511 DeepExtractor reconstruc
 \subsubsection{Classification evaluation using Gravity Spy}
 \label{sec:GlitchGAN_gspy_eval}
 To quantify synthetic glitch realism we follow a similar approach to the DeepExtractor evaluation, injecting 100 generated glitches per class into quiet Hanford O3 background noise and classifying them with Gravity Spy.
-The resulting confusion matrix shown in Figure~\ref{fig:cDVGAN_CM} reflects classifier predictions and confidence scores in brackets. The overall classification accuracy is $\sim 72\%$.
-While this may appear low, the misclassifications are consistent with known limitations of Gravity Spy and the use of a fixed injected SNR of 50. 
+% The resulting confusion matrix shown in Figure~\ref{fig:cDVGAN_CM} reflects classifier predictions and confidence scores in brackets. The overall classification accuracy is $\sim 72\%$.
+The resulting confusion matrix shown in Figure~\ref{fig:cDVGAN_CM} reflects classifier predictions and confidence scores in brackets. The overall classification accuracy is $\sim 79.3\%$.
+While this is lower than the results for DeepExtractor reconstructions, the misclassifications are consistent with known limitations of Gravity Spy and the use of a fixed injected SNR according to the mean SNR of each glitch class. 
 
 Most misclassifications occur in the Koi Fish and Scattered Light classes. 
-While only 20\% of the generated Koi Fish samples were correctly classified, the majority of the remaining samples were misidentified as Blip, Blip Low Frequency, or Tomte.
+While only 70\% of the generated Koi Fish samples were correctly classified, the majority of the remaining samples were misidentified as Extremely Loud, Light Modulation and Blip.
 This behaviour is consistent with known morphological similarities between Koi Fish and these glitch classes, which may arise from related physical mechanisms differing primarily in SNR~\cite{Areeda2017}.
-Moreover, increasing the injected SNR of the generated Koi Fish samples to 150 raises the classification accuracy to 79\% with an average confidence of $\sim$95\%, further illustrating the dependence of Gravity Spy classifications on the injected SNR.
+Moreover, changing the injected SNR of the generated Koi Fish samples to 150 raises the classification accuracy to 79\% with an average confidence of $\sim$95\%, further illustrating the dependence of Gravity Spy classifications on the injected SNR.
 
 % This behaviour is further supported by using an injected SNR of 20, where Koi Fish classification accuracy drops to near zero (mostly misclassified as Blip), and Whistle classification accuracy also drops significantly, with frequent misclassification as No Glitch.
 
@@ -580,7 +619,9 @@ For Scattered Light, Gravity Spy often predicts Fast Scattering, which is expect
 This was also observed for DeepExtractor's original reconstructions of both Fast Scattering and Scattered Light shown in Figure~\ref{fig:de_confusion}.
 % This suggests that the choice of injected SNR as well as interactions between glitches and the background noise segment (similarly to the case of the DeepExtractor reconstructions) may play a significant role in the classification performance of both the real and synthetic glitches, particularly for morphologically similar classes.
 
-Thus, if Blip, Tomte, and Blip Low Frequency are regarded as acceptable misclassifications for the Koi Fish class, and Fast Scattering is considered an acceptable misclassification for Scattered Light, then the effective classification accuracy for this experiment exceeds 90\%.
+Another class of interest is the Whistle class, where 72\% of glitches were correctly identified. Increasing the injected SNR from 27 to 50 raises the classification accuracy to 94\%, illustrating another case of strong SNR dependence of Gravity Spy classifications for this class.
+
+% Thus, if Blip, Tomte, and Blip Low Frequency are regarded as acceptable misclassifications for the Koi Fish class, and Fast Scattering is considered an acceptable misclassification for Scattered Light, then the effective classification accuracy for this experiment exceeds 90\%.
 It is also important to note that some misclassifications may arise from stochastic interactions between the injected glitches and the specific noise realization into which they are injected, which can differ from the original conditions of the glitch sample. Additionally, labelling uncertainties in the Gravity Spy training set may contribute, and the discarded phase information in $Q$-scans may play a role—an issue we discuss further below.
 
 
@@ -595,7 +636,8 @@ It is also important to note that some misclassifications may arise from stochas
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.8\linewidth]{figures/glitchgan_confusion_matrix_refined.pdf}
+% \includegraphics[width=0.8\linewidth]{figures/glitchgan_confusion_matrix_refined.pdf}
+\includegraphics[width=0.8\linewidth]{figures/gspy_cm_final.pdf}
 \caption[Gravity Spy classification of synthetic GlitchGAN glitches]{
 Confusion matrix showing Gravity Spy classifications of glitches generated by GlitchGAN, with 100 samples per class.
 Each cell indicates the number of samples predicted for each class, with the average Gravity Spy confidence shown in brackets.}
@@ -724,7 +766,7 @@ Complementary validation methods preserving phase information (such as UMAP on t
 
 Overall, while the DiT model demonstrates that latent diffusion is a viable approach to conditional time-domain glitch generation, its ability to reproduce full morphological diversity---especially for mid- and high-frequency content---is limited relative to GlitchGAN.
 
-\clearpage
+% \clearpage
 \section{Discussion}
 \label{sec:discussion}
 
@@ -740,6 +782,7 @@ For example, smaller kernel sizes in generator and discriminator  layers may be 
 Since GlitchGAN is trained on normalized waveforms, it does not learn an explicit SNR distribution, and thus generated glitches must be rescaled to a specified SNR for use in downstream applications. 
 As shown in Section~\ref{sec:GlitchGAN_gspy_eval}, Gravity Spy classifications are strongly sensitive to the injected SNR --- consistent with the fact that individual glitch classes are partly characterized by their SNR distribution.
 Appropriate rescaling is therefore an important consideration for simulations and pipeline validation studies using these synthetic samples.
+For example, one may choose to rescale generated glitches to match the SNR distribution of the real glitches within a given class, or to a fixed SNR for specific applications such as testing pipeline sensitivity at particular SNR thresholds.
 
 Finally, we note that no hyperparameter optimization was performed for this specific dataset; the model is evaluated ``out-of-the-box'' from previous work (except for the dimensionality of the class vector), representing a conservative assessment of GlitchGAN's potential.
 Tuning the parameters of the generator and discriminator architectures, as well as the training procedure, could further improve performance, particularly for the more challenging Whistle class.
@@ -838,11 +881,11 @@ Misclassified samples showed a lower confidence of $84.84\%$, suggesting that cl
 Overall, the misclassification patterns are generally explainable, typically misclassifying as morphologically similar classes, and do not indicate systematic failure of the reconstruction.
 The unsupervised UMAP analysis of DeepExtractor reconstructions revealed well-separated clusters according to the Gravity Spy labels, demonstrating that the reconstructions preserve class-specific morphological structure in the time domain.
 
-For GlitchGAN's generated glitches, Gravity Spy classified most samples correctly.
+For GlitchGAN's generated glitches, Gravity Spy classified most samples correctly with an overall accuracy of $~79\%$.
 Misclassifications primarily occurred for the Koi Fish and Scattered Light classes, which can largely be attributed to morphological similarities between similar classes and Gravity Spy's classification being dependent on SNR.
-For instance, Scattered Light glitches were often misclassified as Fast Scattering, while Koi Fish are often misclassified as Blip or Tomte.
+For instance, Scattered Light glitches were often misclassified as Fast Scattering, while Koi Fish are often misclassified as Extrememly Loud or Light Modulation.
 These overlaps are expected, as the classes share similar time-frequency signatures.
-This is confirmed by increasing the injected SNR to 150, where 79\% of generated Koi Fish samples are correctly classified.
+This is confirmed by changing the injected SNR to 150 for Koi Fish samples and 50 for the Whistle class, where 79\% and 94\% are correctly classified, respectively.
 
 The UMAP results showed that GlitchGAN-generated glitches generally occupy the same regions as real data in the embedded UMAP space, indicating that the model captures much of the morphological diversity within each glitch class.
 One exception is the Whistle class, which consists of the highest-frequency features in the dataset.
@@ -873,11 +916,14 @@ The authors are grateful for computational resources provided by the LIGO Labora
 
 % The synthetic glitch samples generated in this work are available upon request.
 % Code for the cDVGAN model and training pipeline is available at [REPOSITORY\_URL].
+\clearpage
+
 \vspace{-5mm}
 
 \appendix
 
 \section{\label{sec:cDVGAN_Architecture}cDVGAN Architecture}
+% \vspace{-5mm}
 
 Table \ref{tab:model_architecture_2} shows the cDVGAN architecture featured in GlitchGAN.
 
@@ -946,6 +992,8 @@ Loss & Wasserstein & {} & {} & {} & {} \\ \bottomrule
 \label{tab:model_architecture_2}
 \end{table}
 
+% \vspace{-5mm}
+
 \section{\label{sec:cDVGAN_Loss}cDVGAN Loss}
 Figure \ref{fig:loss_plot} shows the training loss for each individual model component.
 
@@ -955,6 +1003,29 @@ Figure \ref{fig:loss_plot} shows the training loss for each individual model com
 \caption{GlitchGAN training loss over 500 epochs.}
 \label{fig:loss_plot}
 \end{figure*}
+
+% \vspace{-2mm}
+
+\section{\label{sec:tsne_umap_params}Hyperparameters for t-SNE and UMAP}
+
+Table \ref{tab:hyperparameters} lists the hyperparameters used for the t-SNE and UMAP analyses.
+
+\begin{table}[h]
+\centering
+\caption{Hyperparameters for t-SNE and UMAP}
+\label{tab:hyperparameters}
+\begin{tabular}{lll}
+\hline
+\textbf{Algorithm} & \textbf{Hyperparameter} & \textbf{Value} \\ \hline
+\rule{0pt}{2.5ex}\textbf{t-SNE} & \texttt{N\_components} & 3 \\
+ & \texttt{Perplexity} & 40 \\
+ & \texttt{Metric} & \texttt{euclidean} \\ \hline
+\rule{0pt}{2.5ex}\textbf{UMAP} & \texttt{N\_neighbors} & 15 \\
+ & \texttt{Min\_dist} & 0.6 \\
+ & \texttt{N\_components} & 3 \\
+ & \texttt{Metric} & \texttt{correlation} \\ \hline
+\end{tabular}
+\end{table}
 
 \vspace{-2mm}
 \section{DiT evaluation results}
