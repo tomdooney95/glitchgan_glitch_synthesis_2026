@@ -24,14 +24,16 @@ jobs:
             texlive-publishers \
             latexmk
 
-      - name: Build PDF
+      - name: Build PDFs
         run: make
 
-      - name: Upload PDF artifact
+      - name: Upload PDF artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: main.pdf
-          path: main.pdf
+          name: pdfs
+          path: |
+            main.pdf
+            main_revision_4AUG.pdf
           if-no-files-found: error
 
       - name: Delete old 'latest' release and tag
@@ -45,6 +47,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Latest PDF
-          files: main.pdf
+          name: Latest PDFs
+          files: |
+            main.pdf
+            main_revision_4AUG.pdf
           make_latest: true
