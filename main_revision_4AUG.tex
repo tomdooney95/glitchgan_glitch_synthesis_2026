@@ -59,8 +59,11 @@ Synthetic glitches are validated against real glitch reconstructions using the G
 Gravity Spy classifies the majority of GlitchGAN's synthetic glitches as the correct class while the UMAP analysis shows substantial overlap between real and synthetic samples in the reduced latent space. 
 % To evaluate whether GlitchGAN-generated glitches are distinguishable from real DeepExtractor reconstructions, we train a one-dimensionalbinary classifier to discriminate between the two in the time-domain, finding them to be statistically indistinguishable.
 % We further probe validate synthetic with a downstream convolutional neural network binary classifier trained to distinguish real glitches held out from GlitchGAN's training from synthetic glitches produced by the model; the classifier detects synthetic samples reliably (95.7\% accuracy, 95\% CI [94.4, 96.7\%), showing that subtle raw-waveform statistical differences remain even where class-level and structural similarity are strong.
-We further validate synthetic glitches with a downstream convolutional neural network trained to distinguish real glitches held out from GlitchGAN's training from synthetic glitches produced by the model. While this classifier reliably detects synthetic samples in a clean, noise-free representation, this detectability drops substantially once real and synthetic glitches are injected into realistic detector noise, indicating that the residual statistical differences are subtler than they first appear. Despite remaining statistically distinguishable, we show that GlitchGAN-generated glitches are practically useful: augmenting a severely data-scarce real training set with synthetic samples improves downstream multi-class glitch classification accuracy, outperforming simple duplication of the same limited real data.
-We further highlight a critical limitation of magnitude-only spectrograms: classifiers operating on magnitude $Q$-transforms can confidently misclassify physically unrealistic glitches from less robust models, underscoring the need for complementary validation methods that preserve phase information.
+% We further validate synthetic glitches with a downstream convolutional neural network trained to distinguish real glitches held out from GlitchGAN's training from synthetic glitches produced by the model.
+To investigate residual distributional differences between real glitches unseen during training and generated synthetic glitches, we train a separate holdout GlitchGAN model on nearly the same dataset but with a small held-out split, and use a downstream convolutional neural network to distinguish these held-out real glitches from synthetic glitches produced by the holdout model.
+While this classifier reliably detects synthetic samples in a clean, noise-free representation, this detectability drops substantially once real and synthetic glitches are injected into realistic detector noise, the condition under which synthetic glitches would typically be deployed for downstream applications.
+Despite remaining statistically distinguishable, we show that GlitchGAN-generated glitches are practically useful: augmenting real training datasets with synthetic samples matches simple duplication of the same real data when data is abundant, and increasingly outperforms it as real data becomes scarcer.
+Finally, we highlight a critical limitation of magnitude-only spectrograms: classifiers operating on magnitude $Q$-transforms can confidently misclassify physically unrealistic glitches from less robust models, underscoring the need for complementary validation methods that preserve phase information.
 % Our results demonstrate the viability of deep generative models for producing realistic synthetic glitches suitable for detector simulations, mock data challenges, and pipeline validation.
 % At the same time, these results reveal the limitations of relying solely on $Q$-transform–based (magnitude spectrogram) representations, as employed by classifiers such as Gravity Spy, which can confidently misclassify unrealistic samples from less robust generative models. 
 % They highlight the critical role of phase information for accurately capturing glitch morphology, which is discarded in standard $Q$-transforms used for glitch classification, and underscore the need for complementary unsupervised validation methods to achieve more reliable glitch characterization.
@@ -103,8 +106,8 @@ BayesWave~\cite{BayesWave} is computationally expensive, and converges unreliabl
 The recent development of DeepExtractor~\cite{DeepExtractor_paper}---a deep learning framework for time-domain glitch reconstruction---offers fast, high-fidelity reconstructions that preserve both amplitude and phase information without imposing waveform smoothness assumptions.
 DeepExtractor has been shown to yield better time-domain mismatch performance than BayesWave in a simulated glitch recovery experiment for both in-sample training classes and out-of-sample classes unseen during training (see FIG. 7 in~\cite{DeepExtractor_paper}), achieving a $10{,}000\times$ speed-up over BayesWave in realistic 1:1 comparisons.
 
-Furthermore, DeepExtractor has been shown to be able to reconstruct three real signals in both LIGO's Hanford and Livingston detectors during O3 with high fidelity without being trained on gravitational waveforms. 
-DeepExtractor achieved low time-domain mismatch against the maximum-likelihood templates from standard parameter estimation workflows (see FIG. 11 in~\cite{DeepExtractor_paper}), where all single-detector signals with matched-filter signal-to-noise ratio (SNR) $\rho_{MF}>13.5$ are reconstructed with under 10\% mismatch against maximum-likelihood templates.
+Furthermore, DeepExtractor has been shown to be able to reconstruct real signals in both LIGO's Hanford and Livingston detectors during O3 with high fidelity without being trained on gravitational waveforms. 
+DeepExtractor achieved low time-domain mismatch against the maximum-likelihood templates from standard parameter estimation workflows (see FIG. 11 in~\cite{DeepExtractor_paper}), where all signals in the experiment with single-detector matched-filter signal-to-noise ratio (SNR) $\rho_{MF}>13.5$ are reconstructed with under 10\% mismatch against maximum-likelihood templates.
 Such findings support DeepExractor as a reliable tool for glitch reconstruction that is agnostic of the underlying morphology, making it suitable for generating large-scale training datasets for generative models.
 
 In this paper, we introduce GlitchGAN, a class-conditional model trained on a dataset of DeepExtractor reconstructions of seven common glitch classes observed during LIGO's O3 run: Blip, Fast Scattering, Koi Fish, Low-Frequency Burst, Scattered Light, Tomte, and Whistle.
@@ -117,12 +120,11 @@ Applying the same evaluation to GlitchGAN's outputs, we show that the model capt
 % Furthermore, we train a downstream convolutional neural network for binary classification, distinguishing real glitches held out from GlitchGAN's training from synthetic glitches produced by the model, and find the two populations to be statistically indistinguishable.
 % Furthermore, we train a dedicated convolutional neural network binary classifier to distinguish real glitches held out from training from GlitchGAN-generated ones. While this classifier reliably detects synthetic samples (95.7\% accuracy, 95\% CI [94.5, 96.9]\%), a simple linear baseline performs substantially worse (69.2\% accuracy), indicating that the residual difference is subtle and largely nonlinear rather than a signficant morphological mismatch.
 
-Furthermore, we train a dedicated CNN binary classifier to distinguish real glitches held out from training from GlitchGAN-generated samples. While this classifier reliably detects synthetic samples in the clean, noise-free representation used for training (95.7\% accuracy), a simple linear logistic regression baseline classifier performs substantially worse (77.6\% accuracy), indicating that the residual difference is largely nonlinear rather than a significant morphological mismatch.
-Injecting both populations into realistic detector noise reduces this detectability further (66.0\% CNN accuracy), and we show that despite remaining statistically distinguishable, GlitchGAN's synthetic glitches are practically useful: augmenting a severely data-scarce real training set with synthetic samples substantially improves downstream multi-class classification accuracy over both the unaugmented baseline and naive duplication of the same limited real data.
-
+Furthermore, we train a dedicated convolutional neural network (CNN) binary classifier to distinguish real glitches held out from training from GlitchGAN-generated samples. While this classifier reliably detects synthetic samples in the clean, noise-free representation used for training (95.7\% accuracy), a simple linear logistic regression baseline classifier performs substantially worse (73.6\% accuracy), indicating that the residual difference is largely nonlinear rather than a significant morphological mismatch.
+Injecting both populations into realistic detector noise reduces this detectability further (66.0\% CNN accuracy), and we show that despite remaining statistically distinguishable, GlitchGAN's synthetic glitches are practically useful: augmenting real training datasets with synthetic samples matches simple duplication of the same real data when data is abundant, and increasingly outperforms it as real data becomes scarcer -- remaining safe where duplication turns harmful, and substantially improving downstream multi-class classification accuracy in the most severely data-scarce regime.
 
 We also demonstrate that GlitchGAN can interpolate between classes, producing novel hybrid morphologies that mix features from the learned classes.
-Finally, we highlight a fundamental limitation of magnitude-only time-frequency representations as validation tools: when applied to physically unrealistic glitches from a diffusion-based comparison model~\cite{diffusionOriginal}, Gravity Spy assigns correct class labels with high confidence despite clear inconsistency in the time domain, because the $Q$-transform discards phase information entirely.
+Finally, we highlight a fundamental limitation of magnitude-only time-frequency representations as validation tools: when applied to physically unrealistic glitches from a diffusion-based model~\cite{diffusionOriginal}, Gravity Spy assigns correct class labels with high confidence despite clear inconsistency in the time domain, because the $Q$-transform discards phase information entirely.
 This underscores the necessity of complementary, phase-preserving validation methods.
 
 % In this paper, we introduce GlitchGAN, a class-conditional model trained on a dataset of time-domain reconstructions of seven common glitch classes observed during LIGO's O3 run: Blip, Fast Scattering, Koi Fish, Low-Frequency Burst, Scattered Light, Tomte, and Whistle. 
@@ -297,7 +299,7 @@ While it is a common glitch class, we exclude the Extremely Loud class because i
 
 % The Extremely Loud threshold and other class boundaries defined by Gravity Spy naturally partition the morphological space.
 
-\subsection{Dataset Preprocessing}
+\subsection{Dataset preprocessing}
 
 We reconstruct with DeepExtractor a 2-second window centered on the glitch trigger time at a sampling rate of 4,096~Hz, yielding 8,192 samples per glitch waveform.
 Our goal was to obtain approximately 5,000 samples per class (1,250 per detector per observing run) under the selection criteria above.
@@ -404,7 +406,7 @@ Full-resolution diffusion proved computationally prohibitive, so we first traine
 The DiT was then trained in this latent space, with generated samples decoded back to the time domain for evaluation.
 This model serves primarily to illustrate the limitation of magnitude-only validation metrics, as discussed in Section~\ref{sec:results}.
 
-\subsection{Evaluation Methodology}
+\subsection{Evaluation methodology}
 
 % Before evaluating GlitchGAN-generated glitches, we first validate the quality of the DeepExtractor reconstructions that form our training dataset.
 % This serves two purposes: (i) confirming that the reconstructions preserve the morphological characteristics recognized by Gravity Spy, which is a prerequisite for using them as realistic training data; and (ii) establishing a quantitative baseline against which to compare the synthetic glitches produced by GlitchGAN.
@@ -415,9 +417,9 @@ This model serves primarily to illustrate the limitation of magnitude-only valid
 We evaluate both the training data (DeepExtractor reconstructions) and GlitchGAN-generated glitches using two complementary approaches: classification with the Gravity Spy classifier and visualization of low-dimensional embeddings via t-SNE and UMAP. 
 For DeepExtractor, this establishes a quantitative baseline confirming the training data is morphologically representative; for GlitchGAN, it assesses how faithfully the model reproduces the underlying glitch distributions.
 We further introduce a downstream binary classification test, in which a dedicated convolutional network attempts to distinguish held-out real glitches from GlitchGAN-generated ones, and repeat it with both real and generated glitches injected into realistic detector noise at per-sample SNRs drawn from the empirical distribution of each class. 
-Finally, we evaluate a practical downstream application: whether, under the same realistic noise conditions, GlitchGAN-generated glitches can augment a severely data-scarce real training set to improve seven-class glitch classification accuracy.
+Finally, we evaluate a practical downstream application: whether, under the same realistic noise conditions, GlitchGAN-generated glitches can augment real training sets across a range of data scarcity to improve seven-class glitch classification accuracy.
 
-\subsubsection{Gravity Spy Classification\label{sec:gspy_classification_methodology}}
+\subsubsection{Gravity Spy classification\label{sec:gspy_classification_methodology}}
 
 % This experiment evaluates glitches by classifying them with Gravity Spy, to investigate whether the reconstructions and generated glitches preserve the representative morphology of their respective glitch classes.
 We reconstruct with DeepExtractor 100 randomly selected glitches from the Gravity Spy dataset according to the criteria in Section \ref{sec:data}, drawing 25 samples per detector (H1, L1) per observing run (O3a, O3b).
@@ -455,7 +457,7 @@ Whistle           & 27.1  \\
 \end{table}
 
 
-\subsubsection{Dimensionality Reduction}
+\subsubsection{Dimensionality reduction}
 To visualize and compare the high-dimensional feature space of real and synthetic glitches, we use two complementary nonlinear dimensionality reduction methods: \textit{t-distributed Stochastic Neighbor Embedding} (t-SNE)~\cite{TSNE} and \textit{Uniform Manifold Approximation and Projection} (UMAP)~\cite{McInnes_2018}. While \textit{Principal Component Analysis} (PCA) captures global variance through linear projections, it cannot resolve the nonlinear structure present in morphologically diverse glitch populations; t-SNE and UMAP are instead designed to preserve local cluster structure in the embedding. t-SNE embeds data by minimizing the Kullback--Leibler divergence between probability distributions encoding pairwise similarities in the original and reduced spaces; it excels at revealing local cluster structure but can distort global geometry. UMAP constructs a nearest-neighbour graph in the high-dimensional space and optimises a low-dimensional counterpart to preserve both local and global topological structure, scaling efficiently to the dataset sizes used here.
 
 For DeepExtractor's reconstructions, we aim to verify that the reconstructed glitches cluster according to their correct Gravity Spy class in an unsupervised manner, confirming that the reconstructions preserve the morphological characteristics recognized by Gravity Spy.
@@ -463,7 +465,7 @@ For GlitchGAN-generated synthetic glitches, we evaluate whether they cluster wit
 The hyperparameters and seeds used for t-SNE and UMAP analyses are detailed in Appendix~\ref{sec:tsne_umap_params}.
 
 
-\subsubsection{Downstream Classification of real vs. synthetic glitches\label{sec:downstream_classification_methods}}
+\subsubsection{Downstream classification of real vs. synthetic glitches\label{sec:downstream_classification_methods}}
 
 % To evaluate whether GlitchGAN-generated glitches are distinguishable from real DeepExtractor reconstructions, we train a binary classifier to discriminate between the two populations.
 % To this end, we train a new GlitchGAN model on the same dataset, but holding out 10\% of the data for the downstream classification, stratifying the split by class.
@@ -495,6 +497,8 @@ As an additional check on the strength of the classification signal, we also fit
 
 \begin{table}[h]
 \centering
+\caption{Per-class breakdown of the held-out real and GlitchGAN-generated glitches used in the downstream real-vs-generated classification test. The 6{,}302-sample pool (3{,}151 real, 3{,}151 generated) is split 70/10/20 into training, validation, and test sets, stratified jointly by class and by real/fake domain, so real and generated samples are represented in equal number within every class and every split.}
+\label{tab:clf_split_breakdown}
 \begin{tabular}{lccccc}
 \toprule
 Class & Real & Generated & Train & Val & Test \\
@@ -510,8 +514,6 @@ Whistle              & 493  & 493  & 690  & 98  & 198  \\
 Total                & 3151 & 3151 & 4412 & 632 & 1258 \\
 \bottomrule
 \end{tabular}
-\caption{Per-class breakdown of the held-out real and GlitchGAN-generated glitches used in the downstream real-vs-generated classification test. The 6{,}302-sample pool (3{,}151 real, 3{,}151 generated) is split 70/10/20 into training, validation, and test sets, stratified jointly by class and by real/fake domain, so real and generated samples are represented in equal number within every class and every split.}
-\label{tab:clf_split_breakdown}
 \end{table}
 
 Having established this experiment in a clean, noise-free representation, we additionally repeat the experiment with real and generated glitches injected into simulated Gaussian detector noise, more closely resembling how these samples would be encountered in practice.\label{sec:noise_injection_methodology}
@@ -520,7 +522,7 @@ We draw a coloured noise realization from the LIGO design power spectral density
 A new, independent noise realization is drawn for every injected sample, rather than reusing a single shared segment, so that no particular realization's random fluctuations can act as a feature shared across the whole dataset.
 
 
-Each glitch, real or generated, is independently rescaled to a target signal-to-noise ratio $\rho$ before injection according to
+Each glitch, real or generated, is independently rescaled to a target SNR $\rho$ before injection according to
 \begin{equation}\label{eq:snr_flat}
     \rho = \lVert h \rVert_2 = \left(\sum_t h(t)^2\right)^{1/2} ,
 \end{equation}
@@ -552,12 +554,12 @@ We use the same held-out real glitch set as in Section~\ref{sec:downstream_class
 To evaluate the effect of real-data scarcity on the value of synthetic augmentation, we construct training pools at three scarcity levels, all stratified proportionally by class from the held-out real set, using train/validation/test splits of 70/10/20, 10/20/70, and 3/20/77 respectively: an abundant pool (the full held-out set at its natural split, giving 2{,}206 real training samples total, $\sim$194--349 per class), a moderately scarce pool ($\sim$10\% train fraction, giving 316 real training samples total, ranging from 28 to 50 per class), and a severely scarce pool ($\sim$3\% train fraction, giving 95 real training samples total, ranging from 8 for Fast Scattering to 15 for the larger classes). In each case, the validation and test sets are drawn from the same held-out real set at the stated split fractions and used identically across every training configuration described below for direct comparability.
 
 
-For each scarcity level, we compare four training-set compositions at two augmentation-target scales -- each pool's own majority-class count, and an aggressive target of 5{,}000 samples per class -- all injected into realistic detector noise and evaluated against the same held-out, noise-injected real validation and test sets:
+For each scarcity level, we compare four training-set compositions at two augmentation-target scales; each pool's own majority-class count, and an aggressive target of 5{,}000 samples per class, all injected into realistic detector noise and evaluated against the same held-out, noise-injected real validation and test sets:
 \begin{enumerate}
 \item \textbf{Unaugmented}: the real unbalanced training pool as-is.
-\item \textbf{Bootstrap-duplicated}: the same real training pool, balanced via oversampling with replacement to the target scale; a control that isolates whether simply having a larger, but entirely non-novel, training set explains any observed improvement.
-\item \textbf{Augmented}: the real training pool, balanced via supplementation with GlitchGAN-generated samples (conditioned on the same class label) to reach the same target scale.
-\item \textbf{Synthetic-only}: GlitchGAN-generated samples only, at the target scale, with no real training data at all.
+\item \textbf{Bootstrap-duplicated}: the same real training pool, balanced via oversampling with replacement to the target scale (majority class count or 5{,}000); a control that isolates whether simply having a larger, but entirely non-novel, training set explains any observed improvement.
+\item \textbf{Augmented}: the real training pool, balanced via supplementation with GlitchGAN-generated samples (conditioned on the same class label) to reach the same target scale as above.
+\item \textbf{Synthetic-only}: GlitchGAN-generated samples only, at each target scale, with no real training data at all.
 \end{enumerate}
 
 
@@ -772,7 +774,7 @@ Overall (700)        & 79.3\%  & [76.1, 82.1]  & 0.957 & [0.948, 0.965] \\
 % \FloatBarrier
 \subsubsection{Global morphological similarity via UMAP}
 \label{sec:glitchgan_umap}
-To assess whether GlitchGAN captures the overall structure of the real glitch distribution, we project both real and synthetic glitch samples into a two-dimensional latent space using UMAP \citep{McInnes_2018}.
+To assess whether GlitchGAN captures the overall structure of the real glitch distribution, we project both real and synthetic glitch samples into a three-dimensional latent space using UMAP \citep{McInnes_2018}.
 The embedding is fitted jointly to real and synthetic samples, using 2,000 real glitches per class (14,000 total) and 2,000 synthetic glitches per class (14,000 total), and the resulting embedding is visualized from three complementary perspectives in Figure~\ref{fig:umap_two_views}, showing two UMAP dimensions in each plot.
 
 % \begin{figure*}[t]
@@ -792,7 +794,8 @@ The embedding is fitted jointly to real and synthetic samples, using 2,000 real 
 \includegraphics[width=\linewidth]{figures/umap_three_views_2d_corr_2k.pdf}
 \caption[Three perspectives of 2D UMAP embeddings comparing real and generated glitches]{
 Three complementary views of two-dimensional UMAP embeddings showing both real and generated glitch samples.
-Each color corresponds to one of the seven glitch classes used during training, with 2,000 real and 2,000 generated samples for each class.
+% Each color corresponds to one of the seven glitch classes used during training, with 2,000 real and 2,000 generated samples for each class.
+Each colour corresponds to one of the seven glitch classes used during training. The embedding itself is fitted using 2,000 real and 2,000 generated samples per class (28,000 total). For visual clarity, this figure displays a randomly selected subset of 800 real and 800 generated samples per class (11,200 total).
 The corresponding real vs synthetic class-wise UMAP projections using the same embedding are shown in Figure~\protect\ref{fig:umap_per_class_rotated}.}
 \label{fig:umap_two_views}
 \end{figure*}
@@ -803,8 +806,13 @@ Figure~\ref{fig:umap_two_views} shows 800 real and 800 generated samples per cla
 Corresponding individual class-wise UMAP projections using the same embedding are shown in Figure~\ref{fig:umap_per_class_rotated}, and provide detail to compare real vs. synthetic samples for each class.
 Strong overlap between real (blue) and synthetic (green) samples indicates that GlitchGAN has learned the general morphological structure of the different glitch types.
 The experiment embedding was fitted using different combinations of seeds and hyperparameters to ensure the patterns are consistent and not an artifact of one particular embedding. 
+% Similar patterns were observed across all iterations, confirming that the results are robust to the choice of hyperparameters and random seed.
+% The different configurations are described in Appendix~\ref{sec:tsne_umap_params} and the results of the different iterations can be found in our online repository.
 Similar patterns were observed across all iterations, confirming that the results are robust to the choice of hyperparameters and random seed.
-The different configurations are described in Appendix~\ref{sec:tsne_umap_params} and the results of the different iterations can be found in our online repository.
+The different configurations are described in Appendix~\ref{sec:tsne_umap_params}, and the full set of results for all nine iterations is available in the \texttt{evaluation\_plots/umap\_stability/} directory of our online repository (\url{https://github.com/tomdooney95/glitchgan}).
+
+
+
 
 For most classes (Blip, Fast Scattering, Scattered Light, Tomte), synthetic and real samples show close clustering with substantial overlap.
 The Whistle class exhibits the most noticeable divergence, with synthetic samples forming a partially separate cluster, suggesting that GlitchGAN captures the dominant Whistle morphology but does not fully explore the full morphological diversity within this class.
@@ -828,14 +836,14 @@ This may reflect limitations of the fixed GAN architecture when applied to this 
 \caption[Per-class UMAP embeddings of real and synthetic glitches]{
 Two-dimensional UMAP embeddings for each glitch class, comparing real (blue) and GlitchGAN-generated (green) samples for the same UMAP embedding shown in Figure~\protect\ref{fig:umap_two_views}.
 Each panel corresponds to one glitch type, showing the same 800 real and 800 generated samples per class plotted in Figure~\protect\ref{fig:umap_two_views}.
-The close overlap between real and synthetic distributions across most classes demonstrates that GlitchGAN effectively learns class-specific morphological features, though some variation remains for more complex glitch morphologies.}
+The close overlap between real and synthetic distributions across most classes demonstrates that GlitchGAN effectively learns class-specific morphological features, though some variation remains, particularly for the Whistle class.}
 \label{fig:umap_per_class_rotated}
 \end{figure*}
 
-\subsubsection{Downstream Classification of real vs. synthetic glitches\label{sec:downstream_classification_results}}
+\subsubsection{Downstream classification of real vs. synthetic glitches\label{sec:downstream_classification_results}}
 
 The CNN classifier distinguishes real from generated glitches with high a accuracy of 95.7\% (95\% CI [94.4, 96.7]\%).
-A linear logistic regression baseline model fit directly on the raw waveform, with its L2 regularization strength selected via the validation split, is less capable of this discrimination, achieving 73.6\% accuracy, substantially lower than the corresponding CNN accuracy, although still well above random chance.
+A linear logistic regression baseline model fit directly on the raw waveform, with its L2 regularization strength of 100 selected via the validation split, is less capable of this discrimination, achieving 73.6\% accuracy, substantially lower than the corresponding CNN accuracy, although still well above random chance.
 % This is consistent with the strong class-level and structural agreement between real and synthetic glitches already captured by Gravity Spy classification and the UMAP embeddings (Sections~\ref{sec:GlitchGAN_gspy_eval} and~\ref{sec:glitchgan_umap}): a classifier trained specifically to discriminate between the two populations can still detect subtler, lower-level statistical differences at the raw-waveform level that these coarser methods do not resolve.
 This mirrors a broader finding in the generative modelling literature: purpose-built classifiers routinely detect GAN-generated content with high accuracy even when it is otherwise realistic by coarser measures~\cite{wang2020cnngenerated}. 
 Given the results of the previous experiments, we interpret this result not as evidence that GlitchGAN's synthetic glitches are morphologically dissimilar from real ones, but as a caveat on the resolution at which consistency holds against DeepExtractor's reconstructions.
@@ -846,12 +854,14 @@ GlitchGAN reproduces class-level morphology and gross structural similarity fait
 % This is consistent with the interpretation above: the CNN's advantage relied substantially on a fairly specific, consistent signature that is far less reliable once both real and generated glitches are subject to injections into realistic noise using SNR variability drawn from the true empirical distribution (Section~\ref{sec:noise_injection_methodology}) rather than held at a fixed, comparable loudness without noise. 
 % Under conditions that most closely resemble actual detector data, physical consistency between real and synthetic glitches therefore holds more strongly than the clean-domain result alone would suggest.
 
-Repeating this test with real and generated glitches injected into realistic detector noise reduces discriminability substantially. At the epoch-210 checkpoint, the CNN's accuracy drops to 66.0\% (95\% CI [63.3, 68.5]\%), while the linear baseline's accuracy falls to 58.9\% (95\% CI [56.2, 61.6]\%). This is consistent with the interpretation above: the CNN's advantage relied substantially on a fairly specific, consistent signature that is far less reliable once real and generated glitches are injected into realistic noise at per-sample SNRs drawn from the true empirical distribution (Section~\ref{sec:noise_injection_methodology}), rather than presented directly in the clean, noise-free representation used above. Under conditions that more closely resemble actual detector data, physical consistency between real and synthetic glitches therefore holds more strongly than the clean-domain result alone would suggest.
+Repeating this test with real and generated glitches injected into realistic detector noise reduces discriminability substantially. The CNN's accuracy drops to 66.0\% (95\% CI [63.3, 68.5]\%), while the linear baseline's accuracy falls to 58.9\% (95\% CI [56.2, 61.6]\%), with the L2 regularization strength of 0.0001 found during validation. This is consistent with the interpretation above: the CNN's advantage relied substantially on a fairly specific, consistent signature that is far less reliable once real and generated glitches are injected into realistic noise at per-sample SNRs drawn from the true empirical distribution (Section~\ref{sec:noise_injection_methodology}), rather than presented directly in the clean, noise-free representation used above. Under conditions that more closely resemble actual detector data (where synthetic glitches are expected to be used), physical consistency between real and synthetic glitches therefore holds more strongly than the clean-domain result alone would suggest.
 
 % \FloatBarrier
 
 % \begin{table}[h]
 % \centering
+% \caption[Real-vs-generated classifier accuracy across generator training checkpoints]{Real-vs-generated classifier accuracy across four holdout-generator training checkpoints, for both the CNN and the linear (logistic regression) baseline. Epochs 210 and 500 show the lowest CNN-detectable difference between real and generated glitches, with non-overlapping confidence intervals relative to epochs 300 and 400 -- a non-monotonic pattern consistent with the training instability already observed qualitatively when selecting the main model's reported checkpoint (Section~\protect\ref{sec:downstream_classification_methods}).}
+% \label{tab:real_fake_epoch_sweep}
 % \resizebox{\linewidth}{!}{
 % \begin{tabular}{lcccc}
 % \toprule
@@ -864,8 +874,6 @@ Repeating this test with real and generated glitches injected into realistic det
 % \bottomrule
 % \end{tabular}
 % }
-% \caption[Real-vs-generated classifier accuracy across generator training checkpoints]{Real-vs-generated classifier accuracy across four holdout-generator training checkpoints, for both the CNN and the linear (logistic regression) baseline. Epochs 210 and 500 show the lowest CNN-detectable difference between real and generated glitches, with non-overlapping confidence intervals relative to epochs 300 and 400 -- a non-monotonic pattern consistent with the training instability already observed qualitatively when selecting the main model's reported checkpoint (Section~\protect\ref{sec:downstream_classification_methods}).}
-% \label{tab:real_fake_epoch_sweep}
 % \end{table}
 
 \subsubsection{Multi-class classification and data augmentation}
@@ -875,6 +883,8 @@ Table~\ref{tab:fewshot_augmentation} shows seven-class classification accuracy, 
 
 \begin{table*}[t]
 \centering
+\caption{Seven-class classification accuracy under realistic detector-noise injection, across three real-data scarcity levels and two augmentation-target scales: a modest target matching each training pool's own majority-class count, and an aggressive target of 5{,}000 samples per class. \textbf{Bold} entries are significantly better, and entries marked $^\dagger$ significantly worse, than that scarcity level's unaugmented baseline (non-overlapping 95\% Wilson CI).}
+\label{tab:fewshot_augmentation}
 \begin{tabular}{llcc}
 \toprule
 Scarcity level & Training set & Accuracy & 95\% CI \\
@@ -907,18 +917,16 @@ Scarcity level & Training set & Accuracy & 95\% CI \\
  & Synthetic-only @ 5000/class                           & \textbf{91.8\%} & [90.6, 92.8]\% \\
 \bottomrule
 \end{tabular}
-\caption{Seven-class classification accuracy under realistic detector-noise injection, across three real-data scarcity levels and two augmentation-target scales: a modest target matching each training pool's own majority-class count, and an aggressive target of 5{,}000 samples per class. \textbf{Bold} entries are significantly better, and entries marked $^\dagger$ significantly worse, than that scarcity level's unaugmented baseline (non-overlapping 95\% Wilson CI).}
-\label{tab:fewshot_augmentation}
 \end{table*}
 
-At the data-abundant end of this scarcity sweep -- the full held-out real training pool at its natural 70/10/20 split (2{,}206 real samples total, $\sim$194--349 per class) -- augmentation provides at most a modest benefit. At the majority-class target ($\sim$349/class), none of bootstrap-duplication (89.8\%), augmentation (91.4\%), or synthetic-only training (89.0\%) differ significantly from the unaugmented baseline (90.6\%). Scaled up to 5{,}000 samples per class, bootstrap-duplication (92.2\%), augmentation (92.4\%), and synthetic-only training (90.9\%) are all nominally higher than baseline, though none reach statistical significance at this test-set size.
+At the data-abundant level, the full held-out real training pool at its natural 70/10/20 split (2{,}206 real samples total, $\sim$194--349 per class) -- augmentation provides at most a modest benefit. At the majority-class target ($\sim$349/class), none of bootstrap-duplication (89.8\%), augmentation (91.4\%), or synthetic-only training (89.0\%) differ significantly from the unaugmented baseline (90.6\%). Scaled up to 5{,}000 samples per class, bootstrap-duplication (92.2\%), augmentation (92.4\%), and synthetic-only training (90.9\%) are all nominally higher than baseline, though none reach statistical significance at this test-set size.
 
 To assess whether this changes as real data becomes scarcer, we repeat the experiment with a moderately scarce real training pool (316 samples total, 28--50 per class; middle third of Table~\ref{tab:fewshot_augmentation}). At the majority-class target ($\sim$50/class), none of bootstrap-duplication (89.6\%), augmentation (90.5\%), or synthetic-only training (89.3\%) differ significantly from the unaugmented baseline (90.5\%), consistent with the classification task already being close to its accuracy ceiling with this much real data available. Scaled up to 5{,}000 samples per class, a different pattern emerges: bootstrap-duplication becomes significantly \emph{worse} than the unaugmented baseline (86.9\% vs.\ 90.5\%), while GlitchGAN-augmented and synthetic-only training remain statistically indistinguishable from it (90.6\% and 90.7\%, respectively). This harmful-duplication effect was absent at the data-abundant scale above, where the duplication factor was much milder ($\sim$18$\times$ versus roughly $100$--$180\times$ here), suggesting the harm from naive duplication is tied to how extreme the duplication factor is, rather than being a general property of oversampling real data to a large nominal training set size. Even so, synthetic augmentation itself remains a \emph{safe} choice in this regime, providing no measurable benefit but no harm either, unlike naive duplication.
 
 Finally, at the most severely scarce end of this sweep, the picture depends strongly on target scale. At the modest majority-class target ($\sim$15/class), bootstrap-duplication (85.1\%) and augmentation (86.5\%) are statistically indistinguishable from the unaugmented baseline (85.7\%), while training on synthetic data alone is significantly \emph{worse} (80.2\%, non-overlapping 95\% CI) -- unsurprising, since this configuration discards the handful of real anchors entirely in favour of an equally small, purely synthetic set. Scaling the same three strategies up to 5{,}000 samples per class inverts this pattern: augmentation (91.0\%) and synthetic-only training (91.8\%) both become significantly better than baseline (non-overlapping 95\% CIs), while bootstrap-duplication (87.4\%) still shows no significant improvement. Since the augmented and duplicated configurations at this scale are matched in total training set size, this isolates the source of the improvement: it is GlitchGAN's genuine morphological diversity, not merely a larger nominal training set, that drives the gain -- and synthetic augmentation only pays off once deployed at sufficient scale.
 
-Together, these results demonstrate a concrete, practical use case for GlitchGAN: in scenarios where real labelled examples of a glitch class are severely scarce -- for instance, a newly-identified or infrequently-occurring noise transient -- synthetic augmentation substantially improves downstream classifier performance, provided it is deployed at sufficient scale, and does so more reliably than naive resampling of the same limited real data, which offers no benefit at matched scale and becomes actively harmful at large nominal scale in this regime. As real data becomes more abundant, this benefit diminishes and eventually vanishes entirely, consistent with the classification task saturating quickly regardless of data source. Naive duplication's harm at large nominal scale is itself scarcity-dependent: it appears only when the real pool is small enough that reaching a large training set requires an extreme duplication factor, and does not reappear once enough real data is already available that the same nominal scale is reached more moderately.
-Nevertheless, GlitchGAN augmentation is never harmful, showing that it effectively learned the morphological structure of the real glitches.
+Together, these results demonstrate a practical use case for GlitchGAN: in data-scarce scenarios, synthetic augmentation can improve downstream classifier performance, provided it is deployed at sufficient scale. As real data becomes more abundant, this benefit diminishes and eventually vanishes entirely, consistent with the classification task saturating quickly regardless of data source. Naive duplication's harm at large nominal scale is itself scarcity-dependent: it appears only when the real pool is small enough that reaching a large training set requires an extreme duplication factor.
+Nevertheless, GlitchGAN augmentation is never harmful, showing that it effectively learned the morphological structure of the real glitch distribution.
 
 \subsubsection{Generating hybrid glitches via class interpolation}
 
@@ -1004,10 +1012,11 @@ Figure~\ref{fig:dit_lfb} illustrates why: while the time-domain waveforms of rea
 % A less robust generative model may produce synthetic glitches with realistic magnitude-level morphology (e.g., correct duration, central frequency, and bandwitdh) while having fundamentally incorrect phase relationships.
 
 This finding underscores a critical limitation: classifiers operating on magnitude-only representations cannot reliably assess glitch realism.
-Complementary validation methods preserving phase information (such as UMAP on time-domain waveforms) are essential for ensuring synthetic glitches are suitable for detector simulations.
+Complementary validation methods preserving phase information are essential for ensuring synthetic glitches are suitable for detector simulations.
 
-Overall, while the DiT model demonstrates that latent diffusion is a viable approach to conditional time-domain glitch generation, its ability to reproduce full morphological diversity---especially for mid- and high-frequency content---is limited relative to GlitchGAN.
-It is important to note that the DiT model implemented serves only to highlight the limitation in magnitude-only classification. Better diffusion architectures and training strategies may improve performance beyond GlitchGAN and other GAN architectures.
+Overall, while this specific DiT implementation demonstrates that latent diffusion is a viable approach to conditional time-domain glitch generation, its ability to reproduce full morphological diversity---especially for mid- and high-frequency content---is limited relative to GlitchGAN under the configuration tested here.
+It is important to note that the DiT model implemented serves primarily to highlight the limitation in magnitude-only classification.
+Better diffusion architectures and training strategies may improve performance beyond GlitchGAN and other GAN architectures.
 
 % \clearpage
 \section{Discussion}
@@ -1017,9 +1026,10 @@ It is important to note that the DiT model implemented serves only to highlight 
 
 GlitchGAN successfully demonstrates time-domain synthesis of multiple glitch classes reconstructed by DeepExtractor.
 Substantial UMAP overlap between real and synthetic samples, combined with accurate Gravity Spy classification of generated glitches indicates morphological fidelity of generated glitches.
+Furthermore, the ability of GlitchGAN-generated samples to augment real training datasets for downstream classification demonstrates practical utility and shows the model is capable of learning relevant features of real glitch reconstructions.
 However, there exists several limitations and caveats which we address here.
 
-Relatedly, Gravity Spy classification and UMAP embeddings are comparatively coarse validation metrics, operating at the level of class-wide structure rather than fine-grained statistical detail. A dedicated real-vs-generated CNN classifier (Section~\ref{sec:downstream_classification_methods}) detects a residual statistical signature distinguishing synthetic from real glitches with high accuracy in the clean, noise-free domain, indicating that subtle, nonlinear differences remain even where these coarser methods show close agreement. This detectability is substantially, though not completely, reduced once glitches are considered under realistic detector-noise conditions, suggesting the residual signature is most apparent in idealized representations rather than in the conditions under which synthetic glitches would actually be deployed.
+Gravity Spy classification and UMAP embeddings are comparatively coarse validation metrics, operating at the level of class-wide structure rather than fine-grained statistical detail. A dedicated real-vs-generated CNN classifier (Section~\ref{sec:downstream_classification_methods}) detects a residual statistical signature distinguishing synthetic from real glitches with high accuracy in the clean, noise-free domain, indicating that subtle, nonlinear differences remain even where these coarser methods show close agreement. This detectability is substantially, though not completely, reduced once glitches are considered under realistic detector-noise conditions, suggesting the residual signature is most apparent in idealized representations rather than in the conditions under which synthetic glitches would actually be deployed.
 
 Partial failure was observed for the Whistle class, possibly due to insufficient regularization or architectural constraints on receptive field size. 
 For example, smaller kernel sizes in generator and discriminator  layers may be needed to capture the high-frequency content of Whistle glitches (please see Appendix~\ref{sec:cDVGAN_Architecture} for details).
@@ -1038,10 +1048,10 @@ Jointly modelling glitch morphology and SNR is a more complete, though more comp
 
 While DeepExtractor shows great potential for glitch reconstruction, it is not perfect and may introduce artifacts or distortions in the reconstructed glitches.
 These artifacts may propagate into the GlitchGAN training data, potentially affecting the quality of generated glitches, which is difficult to quantify for real glitches since we lack ground truth glitch waveforms.
-However, the strong agreement between real and synthetic glitches in UMAP embeddings and Gravity Spy classifications suggests that any artifacts introduced by DeepExtractor are not dominant in the training data.
+However, the strong agreement between real and synthetic glitches in UMAP embeddings and Gravity Spy classifications, and the capability of the synthetic data to effectively train CNNs to classify real glitch classes, suggest that any artifacts introduced by DeepExtractor are not dominant in the training data.
 That being said, should a more accurate glitch reconstruction method become available in the future, it could be used to retrain GlitchGAN and potentially improve the quality of generated glitches.
 
-Finally, we note that no hyperparameter optimization was performed for this specific dataset; the model is evaluated ``out-of-the-box'' from previous work (except for the dimensionality of the class vector), representing a conservative assessment of GlitchGAN's potential.
+Finally, we note that no hyperparameter optimization was performed for this specific dataset; the model is evaluated ``out-of-the-box'' from previous work (except for the dimensionality of the discriminator input, generator output and class vectors), representing a conservative assessment of GlitchGAN's potential.
 Tuning the parameters of the generator and discriminator architectures, as well as the training procedure, could further improve performance, particularly for the more challenging Whistle class.
 
 
@@ -1079,7 +1089,7 @@ The synthetic glitch population produced by GlitchGAN is immediately useful for:
 \textbf{Detector characterization:} Validating glitch detection, mitigation, and subtraction algorithms
 
 \item
-\textbf{Training data augmentation:} Supplementing limited real glitch samples with GlitchGAN-generated samples, demonstrated in Section~\ref{sec:multiclass_results} to substantially improve downstream classification accuracy in data-scarce regimes
+\textbf{Training data augmentation:} Supplementing limited real glitch samples with GlitchGAN-generated samples, demonstrated in Section~\ref{sec:multiclass_results} to improve downstream classification accuracy in data-scarce regimes
 
 \item
 \textbf{Pipeline robustness testing:} Assessing pipeline sensitivity and false-alarm rates in the presence of instrumental noise morphologies
@@ -1097,7 +1107,7 @@ Future work will iteratively include more glitch classes, starting with more com
 It would be beneficial to develop more sophisticated validation metrics that explicitly evaluate phase consistency, not just magnitude-level morphology, to ensure synthetic glitches are suitable for detector simulations.
 Such methods will be beneficial for evaluating the realism of synthetic glitches and guiding future improvements in generative modeling approaches.
 
-While class conditional generation is a powerful tool, it may also be desirable to develop conditional generation strategies allowing control over glitch duration, SNR, and frequency content independently from class morphology.
+While class conditional generation is a powerful tool, it may also be desirable to develop conditional generation strategies allowing control over continuos features such as glitch duration, SNR, and frequency content, independently from class morphology.
 This would enable more flexible synthesis of glitches for specific applications, such as testing pipeline sensitivity to particular frequency bands or durations.
 
 Finally, integrating these features with mock data challenge pipelines for rapid deployment in detector simulations will be an important step towards practical utility of these synthetic glitch populations for the GW data analysis community.
@@ -1149,9 +1159,12 @@ One exception is the Whistle class, which consists of the highest-frequency feat
 For this class, synthetic samples formed a partially distinct cluster from the real data, suggesting that GlitchGAN did not fully capture the fine-scale, high-frequency structure characteristic of these glitches.
 Future work could address this by incorporating smaller convolutional kernels in the network (balanced against the need for long-range temporal modelling), dilated convolutions to better capture hierarchical structure, or attention mechanisms to enhance global feature representation.
 
-Beyond these coarser validation methods, we further tested physical consistency using a dedicated classifier trained specifically to discriminate real glitches from GlitchGAN-generated ones. This classifier reliably detects synthetic samples in a clean, noise-free representation, indicating that subtle statistical differences remain even where class-level and structural similarity are strong. However, this detectability narrows substantially once glitches are injected into realistic detector noise, suggesting that physical consistency between real and synthetic glitches holds more strongly under conditions resembling actual detector data than the clean-domain result alone would suggest.
+Beyond these coarser validation methods, we further tested synthetic glitch quality using a dedicated classifier trained specifically to discriminate real glitches from GlitchGAN-generated ones. This classifier reliably detects synthetic samples in a clean, noise-free representation, indicating that subtle statistical differences remain even where class-level and structural similarity are strong. However, this detectability narrows substantially once glitches are injected into realistic detector noise, suggesting that physical consistency between real and synthetic glitches holds more strongly under conditions resembling actual detector data where GlitchGAN glitches are intended for use.
 
-Despite this residual detectability, we demonstrated a concrete practical use case for GlitchGAN: augmenting a severely data-scarce real training set with synthetic samples substantially improved downstream multi-class glitch classification accuracy, far exceeding what naive duplication of the same limited real data could achieve. This indicates that GlitchGAN's synthetic glitches carry genuine, useful morphological information beyond simply increasing dataset size, and that this benefit is most pronounced precisely where it matters most: scenarios with only a handful of labelled examples of a given glitch class, such as newly-identified or infrequently-occurring noise transients.
+% Despite this residual detectability, we demonstrated a concrete practical use case for GlitchGAN: augmenting a severely data-scarce real training set with synthetic samples substantially improved downstream multi-class glitch classification accuracy, far exceeding what naive duplication of the same limited real data could achieve. 
+Despite this residual detectability, we demonstrated a concrete practical use case for GlitchGAN: augmenting real training sets with synthetic samples matched simple duplication of the same real data when data was abundant, and increasingly outperformed it as real data became scarcer, remaining safe where duplication turned harmful and improving downstream multi-class glitch classification accuracy in the most severely data-scarce regime. 
+This indicates that GlitchGAN's synthetic glitches carry genuine, useful morphological information beyond simply increasing dataset size.
+%  and that this benefit is most pronounced precisely where it matters most: scenarios with only a handful of labelled examples of a given glitch class, such as newly-identified or infrequently-occurring noise transients.
 
 
 While it is not investigated explicitly how reconstruction artifacts from DeepExtractor may affect GlitchGAN's performance, the strong agreement between real and synthetic glitches in UMAP embeddings and Gravity Spy classifications suggests that any artifacts introduced by DeepExtractor are not dominant in the training data, and GlitchGAN is effective at learning the distributions reconstructed by DeepExtractor.
@@ -1182,19 +1195,22 @@ The authors are grateful for computational resources provided by the LIGO Labora
 % \vspace{-5mm}
 
 The training dataset of DeepExtractor reconstructions used in this work, along with pretrained GlitchGAN generator weights, is hosted on Hugging Face and can be downloaded directly via the \texttt{glitchgan} Python package (\url{https://github.com/tomdooney95/glitchgan}).
-\clearpage
+% \clearpage
 
 \vspace{-5mm}
 
 \appendix
 
-\section{\label{sec:cDVGAN_Architecture}cDVGAN Architecture}
+\section{\label{sec:cDVGAN_Architecture}GlitchGAN Architecture}
 % \vspace{-5mm}
 
 Table \ref{tab:model_architecture_2} shows the cDVGAN architecture featured in GlitchGAN.
 
 \begin{table}[H]
 \centering
+\captionsetup{width=0.5\textwidth}
+\caption[Architecture and hyperparameters of cDVGAN featured in GlitchGAN]{Architecture and hyperparameters of cDVGAN featured in GlitchGAN, for the 8192-sample glitch waveforms used here (10.2M parameters total). The model includes a base discriminator, derivative (DV) discriminator, and generator.}
+\label{tab:model_architecture_2}
 \resizebox{0.43\textwidth}{!}{
 \begin{tabular}{llllll}
 \toprule
@@ -1253,9 +1269,6 @@ Epochs & 210 & {} & {} & {} & {} \\
 Loss & Wasserstein & {} & {} & {} & {} \\ \bottomrule
 \end{tabular}
 }
-\captionsetup{width=0.5\textwidth}
-\caption[Architecture and hyperparameters of cDVGAN featured in GlitchGAN]{Architecture and hyperparameters of cDVGAN featured in GlitchGAN, for the 8192-sample glitch waveforms used here (10.2M parameters total). The model includes a base discriminator, derivative (DV) discriminator, and generator.}
-\label{tab:model_architecture_2}
 \end{table}
 
 % \vspace{-5mm}
@@ -1280,6 +1293,7 @@ Table \ref{tab:hyperparameters} lists the hyperparameters used for the t-SNE and
 \centering
 \caption[Hyperparameters for t-SNE and UMAP]{Hyperparameters for t-SNE and UMAP. For UMAP, \textbf{bold} values give the primary configuration used for the Figures~\protect\ref{fig:umap_two_views} and~\protect\ref{fig:umap_per_class_rotated}; the additional plain values were swept over to confirm the real/fake patterns are consistent and not an artifact of one particular embedding (9 total (\texttt{Random\_state}, \texttt{(N\_neighbors, Min\_dist)}) combinations: seeds $\{0,1,2\}$ $\times$ the three neighbor/distance pairs listed).}
 \label{tab:hyperparameters}
+\resizebox{0.43\textwidth}{!}{
 \begin{tabular}{lll}
 \hline
 \textbf{Algorithm} & \textbf{Hyperparameter} & \textbf{Value} \\ \hline
@@ -1290,7 +1304,7 @@ Table \ref{tab:hyperparameters} lists the hyperparameters used for the t-SNE and
  & \texttt{Random\_state} & \textbf{42}, 0, 1, 2 \\
  & \texttt{N\_components} & 3 \\
  & \texttt{Metric} & \texttt{correlation} \\ \hline
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \section{\label{sec:downstream_classifier_architectures}Downstream Classifier Architectures}
@@ -1301,6 +1315,9 @@ Figure~\ref{fig:snr_distributions} shows the empirical per-class SNR distributio
 
 \begin{table}[h]
 \centering
+\captionsetup{width=0.5\textwidth}
+\caption{Architecture of the 1D CNN classifier used to discriminate between real and GlitchGAN-generated glitches in the downstream classification test. The network takes an 8192-sample time series as input and outputs a single scalar in $[0,1]$, trained with a binary cross-entropy loss and Adam optimizerto predict real (1) vs.\ generated (0). Total trainable parameters: 172{,}897.}
+\label{tab:real_fake_clf_arch}
 \resizebox{0.43\textwidth}{!}{
 \begin{tabular}{llllll}
 \toprule
@@ -1316,13 +1333,13 @@ Dropout                  & (64,)      & --  & -- & 0.3 & --      \\
 Dense                    & (1,)       & --  & -- & --  & Sigmoid \\
 \bottomrule
 \end{tabular}}
-\captionsetup{width=0.5\textwidth}
-\caption{Architecture of the 1D CNN classifier used to discriminate between real and GlitchGAN-generated glitches in the downstream classification test. The network takes an 8192-sample time series as input and outputs a single scalar in $[0,1]$, trained with a binary cross-entropy loss and Adam optimizerto predict real (1) vs.\ generated (0). Total trainable parameters: 172{,}897.}
-\label{tab:real_fake_clf_arch}
 \end{table}
 
 \begin{table}[h]
 \centering
+\captionsetup{width=0.5\textwidth}
+\caption[Architecture of the seven-class CNN classifier for multi-class data augmentation]{Architecture of the seven-class CNN classifier used for the multi-class data-augmentation experiment (Section~\protect\ref{sec:multiclass_methods}). Identical convolutional backbone to the binary real-vs-generated classifier (Table~\protect\ref{tab:real_fake_clf_arch}), differing only in the final layer (seven-way softmax in place of a single sigmoid) and loss (sparse categorical cross-entropy). Total trainable parameters: 173{,}287.}
+\label{tab:multiclass_clf_arch}
 \resizebox{0.43\textwidth}{!}{
 \begin{tabular}{llllll}
 \toprule
@@ -1338,9 +1355,6 @@ Dropout                  & (64,)      & --  & -- & 0.3 & --      \\
 Dense                    & (7,)       & --  & -- & --  & Softmax \\
 \bottomrule
 \end{tabular}}
-\captionsetup{width=0.5\textwidth}
-\caption[Architecture of the seven-class CNN classifier for multi-class data augmentation]{Architecture of the seven-class CNN classifier used for the multi-class data-augmentation experiment (Section~\protect\ref{sec:multiclass_methods}). Identical convolutional backbone to the binary real-vs-generated classifier (Table~\protect\ref{tab:real_fake_clf_arch}), differing only in the final layer (seven-way softmax in place of a single sigmoid) and loss (sparse categorical cross-entropy). Total trainable parameters: 173{,}287.}
-\label{tab:multiclass_clf_arch}
 \end{table}
 
 \vspace{-2mm}
@@ -1359,7 +1373,7 @@ Figure~\ref{fig:snr_distributions} shows the empirical per-class SNR distributio
 \section{DiT evaluation results}
 \label{app:dit_evaluation}
 
-Figures~\ref{fig:dit_confusion} and~\ref{fig:dit_umap} show the full Gravity Spy and UMAP evaluation results for the DiT comparison model.
+Figures~\ref{fig:dit_confusion} and~\ref{fig:dit_umap} show the full Gravity Spy and UMAP evaluation results for the DiT model.
 
 
 \begin{figure*}[ht]
